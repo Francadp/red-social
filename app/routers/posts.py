@@ -31,12 +31,19 @@ def create_post(data: PostCreate, db: SessionDep, current_user: CurrentUser):
 
 @router.patch("/{post_id}", response_model=PostPublic)
 def update_post(post_id: int, data: PostUpdate, db: SessionDep, current_user: CurrentUser):
-    # TODO 6: solo el autor puede editar (o un admin).
-    #   post = get_post_or_404(db, post_id)
-    #   require(post.author_id == current_user.id or is_admin(current_user))   → si no, 403
-    #   post.sqlmodel_update(data.model_dump(exclude_unset=True))
-    #   → db.add → db.commit → db.refresh → return post
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "TODO 6: editar post")
+    post = get_post_or_404(db, post_id)
+
+    # solo el autor o un admin, si no da 403
+    require(post.author_id == current_user.id or is_admin(current_user))
+
+    # exclude_unset para no pisar con None lo que no mandaron
+    datos = data.model_dump(exclude_unset=True)
+    post.sqlmodel_update(datos)
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return post
+
 
 
 @router.delete("/{post_id}", status_code=204)
