@@ -7,6 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from database import get_session
 from main import app
+from models import Like
 
 
 @pytest.fixture()
@@ -135,13 +136,15 @@ def test_user_likes_endpoint(client):
 
 
 def test_deleting_a_post_deletes_its_likes(client, engine):
-    # TODO 8: A este lo escriben uds, mis polluelos del ITSC. Plan:
-    #   1) alice crea un post, bob le da like (PUT /posts/{id}/like)
-    #   2) comprueba en la BD que hay 1 fila en la tabla Like:
-    #        with Session(engine) as db:
-    #            assert len(db.exec(select(Like)).all()) == 1
-    #      (importa Like desde models)
-    #   3) alice borra el post (DELETE /posts/{id}) → 204
-    #   4) vuelve a mirar la tabla Like: tiene que estar vacía (ON DELETE CASCADE)
-    #   Bonus: comenta ondelete="CASCADE" en models.py, borra clase3.db y mira cómo falla el test.
-    pytest.fail("TODO 8: escribe este test")
+    alice = register_and_login(client, "alice")
+    bob = register_and_login(client, "bob")
+    post_id = new_post(client, alice)
+    assert client.put(f"/posts/{post_id}/like", headers=bob).status_code == 200
+
+    with Session(engine) as db:
+        assert len(db.exec(select(Like)).all()) == 1
+
+    assert client.delete(f"/posts/{post_id}", headers=alice).status_code == 204
+
+    with Session(engine) as db:
+        assert len(db.exec(select(Like)).all()) == 0
