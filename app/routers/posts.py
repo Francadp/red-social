@@ -94,11 +94,12 @@ def like_post(post_id: int, db: SessionDep, current_user: CurrentUser):
 
 @router.delete("/{post_id}/like", response_model=PostWithLikes)
 def unlike_post(post_id: int, db: SessionDep, current_user: CurrentUser):
-    # TODO 4: quitar like. Misma idea, al revés, y también idempotente.
-    #   a) get_post_or_404   b) like = db.get(Like, (current_user.id, post_id))
-    #   c) si like existe: db.delete(like) y db.commit()
-    #   d) return get_post_with_likes_or_404(db, post_id)
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "TODO 4: quitar like")
+    get_post_or_404(db, post_id)
+    like = db.get(Like, (current_user.id, post_id))
+    if like is not None:
+        db.delete(like)
+        db.commit()
+    return get_post_with_likes_or_404(db, post_id)
 
 
 @router.get("/{post_id}/likes", response_model=list[UserPublic])
