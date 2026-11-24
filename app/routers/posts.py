@@ -107,14 +107,12 @@ def read_post_likes(
     post_id: int, db: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 20
 ):
     """¿Quiénes le dieron like a este post? (los más recientes primero)"""
-    # TODO 5: devuelve los USUARIOS que dieron like (no los likes). Es un JOIN:
-    #   get_post_or_404(db, post_id)
-    #   stmt = (
-    #       select(User)
-    #       .join(Like, col(Like.user_id) == col(User.id))
-    #       .where(Like.post_id == post_id)
-    #       .order_by(col(Like.created_at).desc())
-    #       .offset(offset).limit(limit)
-    #   )
-    #   return db.exec(stmt).all()
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "TODO 5: quiénes dieron like")
+    get_post_or_404(db, post_id)
+    stmt = (
+        select(User)
+        .join(Like, col(Like.user_id) == col(User.id))
+        .where(Like.post_id == post_id)
+        .order_by(col(Like.created_at).desc())
+        .offset(offset).limit(limit)
+    )
+    return db.exec(stmt).all()
