@@ -34,7 +34,6 @@ class User(UserBase, table=True):
     posts: list["Post"] = Relationship(back_populates="author")
 
 
-
 class UserCreate(UserBase):  # ENTRA al registrarse: tiene password, NO tiene role
     password: Password
 
@@ -72,7 +71,6 @@ class PostCreate(PostBase):
     pass
 
 
-
 class PostUpdate(SQLModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
     content: str | None = Field(default=None, min_length=1, max_length=2000)
@@ -83,15 +81,18 @@ class PostPublic(PostBase):
     author_id: int
     created_at: datetime
 
+
 class PostWithLikes(PostPublic):  # SALE: el post + cuántos likes tiene (se calcula, no se guarda)
     likes_count: int
 
 
 # ═══════════════ Likes ═══════════════
-class Like(SQLModel, table=True):
-    __tablename__ = "likes"
-
-    # clave compuesta (user_id, post_id), asi no se puede dar dos likes al mismo post
-    user_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
-    post_id: int = Field(foreign_key="posts.id", primary_key=True, ondelete="CASCADE")
-    created_at: datetime = Field(default_factory=utcnow)
+# TODO 1: crea la tabla de ENLACE  class Like(SQLModel, table=True)  (muchos-a-muchos users ↔ posts)
+#   __tablename__ = "likes"
+#   user_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
+#   post_id: int = Field(foreign_key="posts.id", primary_key=True, ondelete="CASCADE")
+#   created_at: datetime = Field(default_factory=utcnow)
+#
+#   Dos campos con primary_key=True = clave primaria COMPUESTA (user_id, post_id).
+#   Pregunta: ¿qué impide la base de datos con esta clave? ¿Y con ondelete="CASCADE"?
+#   (Borra clase3.db y reinicia después de agregar la tabla.)
