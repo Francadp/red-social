@@ -26,10 +26,9 @@ class UserBase(SQLModel):
 
 class User(UserBase, table=True):
     __tablename__ = "users"
-
+    
     id: int | None = Field(default=None, primary_key=True)
-    # se guarda el hash, nunca la contraseña
-    hashed_password: str
+    hashed_password:str
     role: Role = Field(default=Role.USER)
     posts: list["Post"] = Relationship(back_populates="author")
 
@@ -44,6 +43,11 @@ class UserPublic(UserBase):  # SALE: vista pública
 
 class UserMe(UserPublic):  # SALE: vista privada, solo para el propio usuario
     role: Role
+
+
+class UserProfile(UserPublic):  # SALE: el usuario + sus contadores (se calculan, no se guardan)
+    followers_count: int  # cuántos lo siguen a él
+    following_count: int  # a cuántos sigue él
 
 
 class Token(SQLModel):
@@ -66,8 +70,7 @@ class Post(PostBase, table=True):
     author: User = Relationship(back_populates="posts")
 
 
-class PostCreate(PostBase):
-    # saque author_id, el autor sale del token
+class PostCreate(PostBase):    
     pass
 
 
@@ -88,9 +91,27 @@ class PostWithLikes(PostPublic):  # SALE: el post + cuántos likes tiene (se cal
 
 # ═══════════════ Likes ═══════════════
 class Like(SQLModel, table=True):
+    """Tabla de ENLACE: una fila = "este usuario le dio like a este post".
+    La clave primaria es COMPUESTA (user_id, post_id): la base de datos misma
+    impide que el mismo usuario dé dos likes al mismo post."""
+
     __tablename__ = "likes"
 
-    # clave compuesta (user_id, post_id), asi no se puede dar dos likes al mismo post
     user_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
     post_id: int = Field(foreign_key="posts.id", primary_key=True, ondelete="CASCADE")
     created_at: datetime = Field(default_factory=utcnow)
+
+
+# ═══════════════ Follows ═══════════════
+# TODO 1: crea la tabla de ENLACE  class Follow(SQLModel, table=True)  (users ↔ users, consigo misma)
+#   __tablename__ = "follows"
+#   follower_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")   ← QUIEN sigue
+#   followed_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")   ← A QUIÉN sigue
+#   created_at: datetime = Field(default_factory=utcnow)
+#
+#   Es igual que Like, pero las DOS claves foráneas apuntan a la MISMA tabla (users).
+#   Extra (defensa en profundidad): que la base de datos rechace seguirse a uno mismo:
+#       from sqlalchemy import CheckConstraint      (agrégalo a los imports de arriba)
+#       __table_args__ = (CheckConstraint("follower_id != followed_id", name="no_self_follow"),)
+#   Pregunta: ¿por qué no basta con validarlo solo en el endpoint?
+#   (Borra clase4.db y reinicia después de agregar la tabla.)
