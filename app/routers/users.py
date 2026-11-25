@@ -82,17 +82,15 @@ def unfollow_user(user_id: int, db: SessionDep, current_user: CurrentUser):
 def read_followers(
     user_id: int, db: SessionDep, offset: int = 0, limit: Annotated[int, Query(le=100)] = 20
 ):
-    # TODO 5: quiénes siguen a user_id.
-    #   get_user_or_404(db, user_id)
-    #   stmt = (
-    #       select(User)
-    #       .join(Follow, col(Follow.follower_id) == col(User.id))
-    #       .where(Follow.followed_id == user_id)
-    #       .order_by(col(Follow.created_at).desc())
-    #       .offset(offset).limit(limit)
-    #   )
-    #   return db.exec(stmt).all()
-    raise HTTPException(status.HTTP_501_NOT_IMPLEMENTED, "TODO 5: followers")
+    get_user_or_404(db, user_id)
+    stmt = (
+        select(User)
+        .join(Follow, col(Follow.follower_id) == col(User.id))
+        .where(Follow.followed_id == user_id)
+        .order_by(col(Follow.created_at).desc())
+        .offset(offset).limit(limit)
+    )
+    return db.exec(stmt).all()
 
 
 @router.get("/{user_id}/following", response_model=list[UserPublic])
