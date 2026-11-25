@@ -1,13 +1,12 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, status
-from sqlmodel import col, select
+from sqlalchemy import func
+from sqlmodel import Session, col, select
 
 from dependencies import CurrentUser, SessionDep, get_user_or_404
-from models import Like, Post, PostPublic, UserProfile, UserPublic
+from models import Follow, Like, Post, PostPublic, User, UserProfile, UserPublic
 
-# TODO 1 (cont.): cuando tengas la tabla Follow, agrégala al import de models de arriba
-#                 (y también `User`, `func` de sqlalchemy y `Session` de sqlmodel cuando los pidan).
 
 router = APIRouter(prefix="/users", tags=["users"])
 

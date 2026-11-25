@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from typing import Annotated
 
 from pydantic import StringConstraints
+from sqlalchemy import CheckConstraint
 from sqlmodel import Field, Relationship, SQLModel
-
 
 def utcnow() -> datetime:
     return datetime.now(timezone.utc)
@@ -103,15 +103,10 @@ class Like(SQLModel, table=True):
 
 
 # ═══════════════ Follows ═══════════════
-# TODO 1: crea la tabla de ENLACE  class Follow(SQLModel, table=True)  (users ↔ users, consigo misma)
-#   __tablename__ = "follows"
-#   follower_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")   ← QUIEN sigue
-#   followed_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")   ← A QUIÉN sigue
-#   created_at: datetime = Field(default_factory=utcnow)
-#
-#   Es igual que Like, pero las DOS claves foráneas apuntan a la MISMA tabla (users).
-#   Extra (defensa en profundidad): que la base de datos rechace seguirse a uno mismo:
-#       from sqlalchemy import CheckConstraint      (agrégalo a los imports de arriba)
-#       __table_args__ = (CheckConstraint("follower_id != followed_id", name="no_self_follow"),)
-#   Pregunta: ¿por qué no basta con validarlo solo en el endpoint?
-#   (Borra clase4.db y reinicia después de agregar la tabla.)
+class Follow(SQLModel, table=True):
+    __tablename__ = "follows"
+    __table_args__ = (CheckConstraint("follower_id != followed_id", name="no_self_follow"),)
+
+    follower_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
+    followed_id: int = Field(foreign_key="users.id", primary_key=True, ondelete="CASCADE")
+    created_at: datetime = Field(default_factory=utcnow)
