@@ -44,5 +44,5 @@ def login(form: Annotated[OAuth2PasswordRequestForm, Depends()], db: SessionDep)
 
 
 @router.get("/me", response_model=UserMe)
-def me(current_user: CurrentUser):  # ya resuelto: funciona cuando hagas el TODO 4
+def me(current_user: CurrentUser):
     return current_user

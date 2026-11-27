@@ -76,8 +76,7 @@ def update_post(post_id: int, data: PostUpdate, db: SessionDep, current_user: Cu
 def delete_post(post_id: int, db: SessionDep, current_user: CurrentUser):
     post = get_post_or_404(db, post_id)
     require(post.author_id == current_user.id or is_admin(current_user))
-    # ¿qué pasa con los likes de este post? (mira el TODO 1 y el TODO 8)
-    db.delete(post)
+    db.delete(post)  # los likes del post se borran solos por el ondelete="CASCADE"
     db.commit()
 
 

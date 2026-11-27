@@ -13,7 +13,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Clase 4", lifespan=lifespan)
+app = FastAPI(title="Red social", lifespan=lifespan)
 
 app.include_router(auth.router)
 app.include_router(users.router)
